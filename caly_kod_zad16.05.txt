@@ -1,0 +1,79 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using t3d;
+using punkt;
+
+namespace CudzeKlasy
+{
+    public partial class Form1 : Form
+    {
+        private double r = 10, fi = 45, teta = 60;      //pozycja obserwatora we współrzędnych sferycznych
+
+        public Form1()
+        {
+            InitializeComponent();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            
+        }
+
+        //      Punkty p to rogi ostrosłupa o krawędzi 1 metr. Ostrosłup jest widziany z pozycji zadanej współrzędnymi sferycznymi
+        //      Pointsy ep to ich odpowiedniki na ekranie
+        private void mojPanel1_Paint(object sender, PaintEventArgs e)
+        {
+            Graphics g = e.Graphics;
+            Punkt obserwator = Punkt.RFiTetaToXYZ(r, fi, teta);    //konwersja sferycznych do kartezjanskich
+            T3d projektor = new T3d(obserwator, mojPanel1.ClientRectangle);
+
+            Punkt[] p = { new Punkt(0, 0, 1),           //ostrosłup zamieniony na czworościan foremny
+                          new Punkt(0, 0, 0),
+                          new Punkt(0, 0, 0),
+                          new Punkt(-1, 0, 0),
+                          new Punkt(0, -1, 0) };
+            Point[] ep = new Point[5];
+
+            for (int i = 0; i < p.Length; i++)          //konwersja punktów 3d na ekran
+                projektor.punkt_3d(out ep[i], p[i]);
+
+            g.DrawLine(Pens.White, ep[1], ep[2]);    //podstawa ostrosłupa
+            g.DrawLine(Pens.White, ep[2], ep[3]);
+            g.DrawLine(Pens.White, ep[3], ep[4]);
+            g.DrawLine(Pens.White, ep[4], ep[1]);
+                            
+            g.DrawLine(Pens.White, ep[1], ep[0]);    //boki.
+            g.DrawLine(Pens.White, ep[2], ep[0]);
+            g.DrawLine(Pens.White, ep[3], ep[0]);
+            g.DrawLine(Pens.White, ep[4], ep[0]);
+        }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            fi += 1;
+            if (fi >= 360)
+                fi -= 360;
+            mojPanel1.Invalidate();
+        }
+    }
+    class MojPanel : Panel
+    {
+        public MojPanel()
+        {
+            BackColor = Color.Black;
+            DoubleBuffered = true;
+        }
+    }
+}

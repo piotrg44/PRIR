@@ -1,0 +1,131 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace Kulki2
+{
+    public partial class Form1 : Form
+    {
+        private List<Figura> figury = new List<Figura>();//utworzenie prywatnej listy figur po to aby móc przetrzymywac
+        //w tej liscie wszystkie figury ktore sa podklasami figury
+        public Form1()
+        {
+            figury.Add(new Kulka(200, 0, 50, 2, 2, Color.Blue));//tworzy kulke
+            figury.Add(new Kulka(600, 300, 50, 2, 2, Color.Yellow));//tworzy kulke
+            figury.Add(new Kwadrat(100, 100, 50, 2, 2, Color.Red));//tworzy kwadrat
+            figury.Add(new Kwadrat(0, 0, 50, 2, 2, Color.Green));//tworzy kwadrat
+            InitializeComponent();
+        }
+        private void button1_Click(object sender, EventArgs e)
+        {
+            timer1.Start();
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            timer1.Stop();
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            foreach (Figura k in figury)
+                k.porusz(mojPanel1.Width, mojPanel1.Height);
+            mojPanel1.Invalidate();
+        }
+
+        abstract class Figura
+        {
+            protected float polozenieX, polozenieY, predkoscX, predkoscY;
+            protected int promien;
+            protected SolidBrush b;
+
+            public Figura(float startX, float startY, int promien, float predkoscX, float predkoscY, Color color)//konstruktor figura
+            {
+                this.promien = promien;
+                this.predkoscX = predkoscX;
+                this.predkoscY = predkoscY;
+
+                polozenieX = startX;
+                polozenieY = startY;
+
+                b = new SolidBrush(color);
+            }
+            abstract public void rysuj(Graphics g);//deklaracja abstrakcyjnej metody rysuj
+
+            public void porusz(int szerokosc, int wysokosc)
+            {
+                polozenieX += predkoscX;
+                polozenieY += predkoscY;
+
+                if (polozenieX + promien >= szerokosc || polozenieX < 0)
+                {
+                    predkoscX *= -1;
+                    Console.Beep();//figura która przekroczy zakres X odbije sie z dzwiekiem
+                }
+
+                if (polozenieY + promien >= wysokosc || polozenieY < 0)
+                {
+                    predkoscY *= -1;
+                    Console.Beep();//figura która przekroczy zakres X odbije sie z dzwiekiem
+                }
+            }
+        }
+
+        class Kulka : Figura//dziedziczenie po klasie figura
+        {
+            public Kulka(float startX, float startY, int promien, float predkoscX, float predkoscY, Color color)
+                : base(startX, startY, promien, predkoscX, predkoscY, color)//przekazanie zmiennych z klasy nadrzednej
+            {
+            }
+            override
+            // metoda rysujaca kulke na panelu
+            public void rysuj(Graphics g)//nadpisana metoda z figury
+            {
+                g.FillEllipse(b, polozenieX, polozenieY, promien, promien);//rysowanie koła
+            }
+        }
+
+        class Kwadrat : Figura//dziedziczenie po klasie figura
+        {
+            public Kwadrat(float startX, float startY, int promien, float predkoscX, float predkoscY, Color color)
+                : base(startX, startY, promien, predkoscX, predkoscY, color)//przekazanie zmiennych z klasy nadrzednej
+            {
+            }
+            override
+
+            public void rysuj(Graphics g)//nadpisana metoda z figury
+            {
+                g.FillRectangle(b, polozenieX, polozenieY,  promien,  promien);//rysowanie kwadratu
+            }
+        }
+
+        private void mojPanel1_Paint(object sender, PaintEventArgs e)
+        {
+            Graphics g = e.Graphics;
+            foreach (Figura k in figury)
+            {
+                k.rysuj(g);//wywołanie metody rysuj
+            }
+        }
+
+  
+    }
+    public class MojPanel : Panel
+    {
+        public MojPanel()
+        {
+            DoubleBuffered = true;//podwojne odswiezanie aby nie migotało 
+        }
+    }
+}
